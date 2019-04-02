@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Client App</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.9/dist/vue.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+</head>
+<body>
+	<div id="app">
+		<client>
+			
+		</client>
+	</div>	
+	<script>
+		Vue.component('Client', {
+			template: `
+			<div>
+				<form @submit.prevent="submit">
+					<label>Enter your index</label>
+					<input v-model="index" />
+					<button>Submit</button>
+				</form>
+				<h3>Indexes I have seen: </h3>
+				<ul>
+					<li v-for="seen in seenIndexes">
+						{{ seen.number }}
+					</li>
+				</ul>
+				<h3>Calculated Values</h3>
+				<ul>
+					<li v-for="(value, key) in values">
+						For index {{ key }} I calculated {{ value }}
+					</li>
+				</ul>
+
+			</div>
+			`,
+			data() {
+				return  {
+					seenIndexes: [],
+					values: {},
+					index: ''
+				}
+			},
+			mounted() {
+				this.fetchValues();	
+				this.fetchIndexes();	
+			},
+			methods: {
+				fetchValues() {
+					axios.get('/api/values/current')
+						.then(res => {
+							this.values = res.data
+						})
+				},	
+				fetchIndexes() {
+					axios.get('/api/values/all')
+						.then(res => {
+
+					this.seenIndexes = res.data;
+						})
+				},
+				submit() {
+					axios.post('/api/values', {
+						index: this.index
+					}).then(() => {
+						this.index = ''
+					})
+				}
+			},
+		});
+		new Vue({
+			el: '#app'
+		});
+	</script>
+</body>
+</html>
